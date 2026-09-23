@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - PPID Kemenag Liko</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .view-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        
+        /* Upload Area */
+        .upload-area { border: 2px dashed #d1d5db; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover { border-color: #007D40; background: #f0fdf4; }
+        .upload-area.dragover { border-color: #007D40; background: #dcfce7; }
+        .file-preview { max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 10px; object-fit: cover; }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 300px; padding: 16px; border-radius: 8px; color: white; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease-out; }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.warning { background-color: #f59e0b; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-slate-900 text-white w-64 flex-shrink-0 hidden md:flex flex-col transition-all duration-300 z-20 h-full absolute md:relative">
+        <div class="h-16 flex items-center justify-center border-b border-slate-800 px-4">
+            <i class="fas fa-landmark text-green-400 text-2xl mr-3"></i>
+            <h1 class="text-lg font-bold tracking-wider">E-PPID Panel</h1>
+            <button id="close-sidebar" class="md:hidden ml-auto text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-4 mt-2">Menu Utama</p>
+            <nav class="space-y-2">
+                <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn flex items-center py-2.5 px-4 rounded-lg bg-green-600 text-white transition-colors"><i class="fas fa-chart-pie w-6 text-center mr-2"></i> Dasbor</a>
+                <!-- PERBAIKAN: Menu ini sekarang mengarah ke 'data-list' (Tabel), bukan 'input-form' -->
+                <a href="#" onclick="switchView('data-list')" id="nav-data-list" class="nav-btn flex items-center py-2.5 px-4 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"><i class="fas fa-folder-open w-6 text-center mr-2"></i> Kelola Dokumen</a>
+                <a href="#" onclick="switchView('permohonan')" id="nav-permohonan" class="nav-btn flex items-center py-2.5 px-4 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"><i class="fas fa-envelope-open-text w-6 text-center mr-2"></i> Permohonan Info</a>
+                <a href="#" onclick="switchView('keberatan')" id="nav-keberatan" class="nav-btn flex items-center py-2.5 px-4 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"><i class="fas fa-balance-scale w-6 text-center mr-2"></i> Keberatan</a>
+                <a href="#" onclick="switchView('profil-edit')" id="nav-profil-edit" class="nav-btn flex items-center py-2.5 px-4 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"><i class="fas fa-building w-6 text-center mr-2"></i> Edit Profil</a>
+            </nav>
+            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-4 mt-8">Pengaturan</p>
+            <nav class="space-y-2">
+                <a href="#" onclick="logout()" class="flex items-center py-2.5 px-4 rounded-lg text-red-400 hover:bg-slate-800 transition-colors"><i class="fas fa-sign-out-alt w-6 text-center mr-2"></i> Keluar</a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative w-full">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10">
+            <div class="flex items-center">
+                <button id="mobile-menu-btn" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4"><i class="fas fa-bars text-xl"></i></button>
+                <h2 id="page-title" class="text-xl font-semibold text-gray-800">Ringkasan Dasbor</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <i class="fas fa-bell text-gray-400 text-xl"></i>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center" id="notif-count">0</span>
+                </div>
+                <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shadow-md" id="user-avatar" title="Admin">A</div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+            
+            <!-- DASBOR -->
+            <section id="view-dashboard" class="view-section active">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                        <div class="p-4 rounded-full bg-green-100 text-green-600 mr-4"><i class="fas fa-file-alt text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Total Dokumen</p><p class="text-2xl font-bold text-gray-800" id="stat-total">0</p></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                        <div class="p-4 rounded-full bg-blue-100 text-blue-600 mr-4"><i class="fas fa-calendar-check text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Info Berkala</p><p class="text-2xl font-bold text-gray-800" id="stat-berkala">0</p></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                        <div class="p-4 rounded-full bg-indigo-100 text-indigo-600 mr-4"><i class="fas fa-envelope text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Permohonan Masuk</p><p class="text-2xl font-bold text-gray-800" id="stat-permohonan">0</p></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                        <div class="p-4 rounded-full bg-orange-100 text-orange-600 mr-4"><i class="fas fa-balance-scale text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium">Pengajuan Keberatan</p><p class="text-2xl font-bold text-gray-800" id="stat-keberatan">0</p></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h3>
+                    <div id="recent-activity" class="space-y-4"></div>
+                </div>
+            </section>
+
+            <!-- DATA LIST DOKUMEN (Halaman Utama Kelola Dokumen) -->
+            <section id="view-data-list" class="view-section">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Daftar Dokumen Informasi Publik</h3>
+                            <p class="text-sm text-gray-500">Kelola, edit, dan hapus dokumen yang telah dipublikasikan.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <input type="text" id="search-input" placeholder="Cari judul..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none w-full md:w-64">
+                                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                            </div>
+                            <!-- PERBAIKAN: Tombol ini sekarang memicu perpindahan ke form tambah -->
+                            <button onclick="switchView('input-form'); prepareAddDokumen()" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus mr-1"></i> Tambah Dokumen
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                                    <th class="py-3 px-6 font-semibold w-12">No</th>
+                                    <th class="py-3 px-6 font-semibold">Judul Informasi</th>
+                                    <th class="py-3 px-6 font-semibold">Kategori</th>
+                                    <th class="py-3 px-6 font-semibold">Tgl. Publikasi</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-28">Status</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-32">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="text-sm text-gray-700"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <span class="text-sm text-gray-500" id="table-info">Menampilkan 0 data</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INPUT / EDIT FORM DOKUMEN (Disembunyikan secara default, dipanggil via tombol) -->
+            <section id="view-input-form" class="view-section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800" id="form-title">Tambah Dokumen Baru</h3>
+                            <p class="text-sm text-gray-500 mt-1">Lengkapi form di bawah ini untuk mengunggah dan mempublikasikan data.</p>
+                        </div>
+                        <button onclick="switchView('data-list')" class="text-sm text-gray-500 hover:text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+                        </button>
+                    </div>
+                    
+                    <form id="document-form" class="p-6 space-y-6">
+                        <input type="hidden" id="doc-edit-id">
+                        <input type="hidden" id="doc-old-fileUrl">
+                        <input type="hidden" id="doc-old-fileName">
+                        <input type="hidden" id="doc-old-fileType">
+
+                        <div>
+                            <label for="doc-title" class="block text-sm font-medium text-gray-700 mb-1">Judul Informasi / Dokumen <span class="text-red-500">*</span></label>
+                            <input type="text" id="doc-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" placeholder="Contoh: Laporan Keuangan Tahun 2025">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="doc-category" class="block text-sm font-medium text-gray-700 mb-1">Kategori Informasi <span class="text-red-500">*</span></label>
+                                <select id="doc-category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors bg-white">
+                                    <option value="Informasi Berkala">Informasi Berkala</option>
+                                    <option value="Informasi Serta Merta">Informasi Serta Merta</option>
+                                    <option value="Informasi Setiap Saat">Informasi Setiap Saat</option>
+                                    <option value="Informasi Dikecualikan">Informasi Dikecualikan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="doc-pic" class="block text-sm font-medium text-gray-700 mb-1">Unit Pengelola (PIC)</label>
+                                <input type="text" id="doc-pic" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" placeholder="Contoh: Biro Keuangan">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="doc-desc" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat</label>
+                            <textarea id="doc-desc" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors" placeholder="Berikan penjelasan singkat mengenai dokumen ini..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">File Dokumen <span class="text-red-500" id="file-required-mark">*</span></label>
+                            <div class="upload-area" id="upload-area">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                <div class="text-sm text-gray-600">
+                                    <label for="doc-file" class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 px-1">
+                                        <span>Pilih file</span>
+                                        <input id="doc-file" name="doc-file" type="file" class="sr-only" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.ppt,.pptx,.zip,.rar">
+                                    </label>
+                                    <span>atau seret dan lepas ke sini</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">PDF, XLS, DOC, PPT, ZIP, Image hingga 10MB</p>
+                                <div id="file-preview-container" class="hidden mt-3">
+                                    <img id="file-preview" class="file-preview hidden mx-auto">
+                                    <div id="file-icon-preview" class="hidden mx-auto text-4xl text-gray-400 mb-2"><i class="fas fa-file-pdf"></i></div>
+                                    <p id="file-name-display" class="text-sm font-semibold text-green-600"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="upload-progress" class="hidden">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600" id="upload-text">Mengupload file...</span>
+                                <span class="text-sm text-gray-600 font-bold" id="upload-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full transition-all duration-300" id="upload-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="form-alert" class="hidden rounded-lg p-4 border flex">
+                            <i id="alert-icon" class="mt-0.5 mr-3"></i>
+                            <p id="alert-message" class="text-sm"></p>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button" onclick="switchView('data-list')" class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Batal</button>
+                            <button type="submit" class="px-5 py-2 bg-green-600 rounded-lg text-white hover:bg-green-700 font-medium transition-colors flex items-center" id="btn-submit">
+                                <i class="fas fa-save mr-2"></i> Simpan Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- PERMOHONAN -->
+            <section id="view-permohonan" class="view-section">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Daftar Permohonan Informasi</h3>
+                            <p class="text-sm text-gray-500">Kelola dan berikan tanggapan atas permohonan masyarakat.</p>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="search-permohonan" placeholder="Cari nama pemohon..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                                    <th class="py-3 px-6 font-semibold w-12">No</th>
+                                    <th class="py-3 px-6 font-semibold">Identitas Pemohon</th>
+                                    <th class="py-3 px-6 font-semibold">Rincian Informasi</th>
+                                    <th class="py-3 px-6 font-semibold">Tgl. Masuk</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-32">Status</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-permohonan" class="text-sm text-gray-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KEBERATAN -->
+            <section id="view-keberatan" class="view-section">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Daftar Pengajuan Keberatan</h3>
+                            <p class="text-sm text-gray-500">Tindaklanjuti keberatan dari pemohon atas tanggapan PPID.</p>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="search-keberatan" placeholder="Cari tiket..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none w-full md:w-64">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                                    <th class="py-3 px-6 font-semibold w-12">No</th>
+                                    <th class="py-3 px-6 font-semibold">Pemohon</th>
+                                    <th class="py-3 px-6 font-semibold">Alasan Keberatan</th>
+                                    <th class="py-3 px-6 font-semibold">Tgl. Pengajuan</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-32">Status</th>
+                                    <th class="py-3 px-6 font-semibold text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-keberatan" class="text-sm text-gray-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- EDIT PROFIL -->
+            <section id="view-profil-edit" class="view-section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-lg font-semibold text-gray-800">Edit Profil PPID</h3>
+                        <p class="text-sm text-gray-500 mt-1">Ubah informasi profil yang akan ditampilkan di halaman publik.</p>
+                    </div>
+                    <form id="profil-form" class="p-6 space-y-6">
+                        <div>
+                            <label for="profil-visi" class="block text-sm font-medium text-gray-700 mb-1">Visi</label>
+                            <textarea id="profil-visi" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Visi PPID"></textarea>
+                        </div>
+                        <div>
+                            <label for="profil-misi" class="block text-sm font-medium text-gray-700 mb-1">Misi</label>
+                            <textarea id="profil-misi" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Misi PPID (pisahkan dengan enter)"></textarea>
+                        </div>
+                        <div>
+                            <label for="profil-alamat" class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                            <input type="text" id="profil-alamat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Alamat lengkap">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="profil-telepon" class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
+                                <input type="text" id="profil-telepon" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Nomor telepon">
+                            </div>
+                            <div>
+                                <label for="profil-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="profil-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Email kontak">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="profil-jam" class="block text-sm font-medium text-gray-700 mb-1">Jam Operasional</label>
+                            <textarea id="profil-jam" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Jam operasional (pisahkan dengan enter)"></textarea>
+                        </div>
+                        <div id="profil-alert" class="hidden rounded-lg p-4 bg-green-50 border border-green-200 flex">
+                            <i class="fas fa-check-circle text-green-500 mt-0.5 mr-3"></i>
+                            <p class="text-sm text-green-700">Profil berhasil diupdate!</p>
+                        </div>
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="submit" class="px-5 py-2 bg-green-600 rounded-lg text-white hover:bg-green-700 font-medium transition-colors flex items-center" id="btn-profil-submit">
+                                <i class="fas fa-save mr-2"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal Detail & Tanggapan (Permohonan/Keberatan) -->
+    <div id="modal-tanggapan" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-tanggapan-title">Detail & Tanggapan</h3>
+                <button onclick="closeModal('modal-tanggapan')" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-blue-50 p-4 rounded-lg border border-blue-100" id="modal-detail-content"></div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggapan / Balasan Resmi PPID <span class="text-red-500">*</span></label>
+                    <textarea id="tanggapan-balasan" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Tulis tanggapan resmi di sini..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ubah Status</label>
+                        <select id="tanggapan-status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            <option value="Menunggu">Menunggu</option>
+                            <option value="Diproses">Diproses</option>
+                            <option value="Selesai">Selesai</option>
+                            <option value="Ditolak">Ditolak</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <a id="tanggapan-email-btn" href="#" class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg text-center hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-envelope"></i> Kirim via Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                <button onclick="closeModal('modal-tanggapan')" class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Batal</button>
+                <button onclick="saveTanggapan()" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2" id="btn-save-tanggapan">
+                    <i class="fas fa-save"></i> Simpan Tanggapan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="modal-hapus" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-500 mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Hapus Data?</h3>
+            <p class="text-sm text-gray-500 mb-6">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex w-full space-x-3">
+                <button onclick="closeModal('modal-hapus')" class="flex-1 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50">Batal</button>
+                <button onclick="confirmDelete()" class="flex-1 py-2.5 bg-red-600 rounded-lg text-white font-medium hover:bg-red-700" id="btn-confirm-delete">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script>
+        // ================= NOTIFICATION SYSTEM =================
+        const Notification = {
+            show: (message, type = 'success') => {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                let icon = 'fa-check-circle';
+                if (type === 'error') icon = 'fa-times-circle';
+                if (type === 'warning') icon = 'fa-exclamation-triangle';
+                
+                toast.innerHTML = `<i class="fas ${icon} text-xl"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+        };
+
+        // ================= INITIALIZATION =================
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!CONFIG.checkAuth()) return;
+            
+            const session = CONFIG.getCurrentUser();
+            const initial = session.nama ? session.nama.charAt(0).toUpperCase() : (session.username ? session.username.charAt(0).toUpperCase() : 'A');
+            document.getElementById('user-avatar').textContent = initial;
+            document.getElementById('user-avatar').title = session.nama || session.username;
+            
+            await updateDashboardStats();
+            await renderDokumenTable(); // Pre-load data tabel
+            prepareAddDokumen(); // Siapkan state form
+        });
+
+        const pageTitles = {
+            'dashboard': 'Ringkasan Dasbor',
+            'data-list': 'Kelola Dokumen Informasi',
+            'input-form': 'Form Dokumen',
+            'permohonan': 'Permohonan Informasi Masuk',
+            'keberatan': 'Pengajuan Keberatan',
+            'profil-edit': 'Edit Profil PPID'
+        };
+
+        // ================= NAVIGATION & MODAL HELPERS =================
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            document.getElementById('page-title').textContent = pageTitles[viewId] || 'Dashboard';
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-green-600', 'text-white');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+            });
+            
+            // Highlight active menu
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            if(activeBtn) activeBtn.classList.add('bg-green-600', 'text-white');
+
+            // Reset search inputs & alerts when switching views
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-permohonan').value = '';
+            document.getElementById('search-keberatan').value = '';
+            document.getElementById('form-alert').className = 'hidden rounded-lg p-4 border flex';
+
+            // Load data based on view
+            if(viewId === 'dashboard') updateDashboardStats();
+            if(viewId === 'data-list') renderDokumenTable();
+            if(viewId === 'permohonan') renderPermohonanTable();
+            if(viewId === 'keberatan') renderKeberatanTable();
+            if(viewId === 'profil-edit') loadProfilEdit();
+
+            if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ================= DOKUMEN CRUD =================
+        let currentDokumenId = null;
+
+        function prepareAddDokumen() {
+            currentDokumenId = null;
+            document.getElementById('form-title').textContent = 'Tambah Dokumen Baru';
+            document.getElementById('file-required-mark').style.display = 'inline';
+            document.getElementById('btn-submit').innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Data';
+            
+            document.getElementById('document-form').reset();
+            document.getElementById('doc-edit-id').value = '';
+            document.getElementById('doc-old-fileUrl').value = '';
+            document.getElementById('doc-old-fileName').value = '';
+            document.getElementById('doc-old-fileType').value = '';
+            document.getElementById('file-preview-container').classList.add('hidden');
+            document.getElementById('form-alert').className = 'hidden rounded-lg p-4 border flex';
+        }
+
+        function prepareEditDokumen(doc) {
+            currentDokumenId = doc.id;
+            document.getElementById('form-title').textContent = 'Edit Dokumen';
+            document.getElementById('file-required-mark').style.display = 'none'; // File tidak wajib saat edit
+            document.getElementById('btn-submit').innerHTML = '<i class="fas fa-save mr-2"></i> Update Data';
+            
+            document.getElementById('doc-edit-id').value = doc.id;
+            document.getElementById('doc-title').value = doc.judul;
+            document.getElementById('doc-category').value = doc.kategori;
+            document.getElementById('doc-pic').value = doc.unit || '';
+            document.getElementById('doc-desc').value = doc.deskripsi || '';
+            
+            document.getElementById('doc-old-fileUrl').value = doc.fileUrl || '';
+            document.getElementById('doc-old-fileName').value = doc.fileName || '';
+            document.getElementById('doc-old-fileType').value = doc.fileType || '';
+            
+            if (doc.fileName) {
+                document.getElementById('file-name-display').textContent = `File saat ini: ${doc.fileName}`;
+                document.getElementById('file-preview-container').classList.remove('hidden');
+                
+                if (api.isImage(doc.fileType)) {
+                    document.getElementById('file-preview').src = doc.fileUrl;
+                    document.getElementById('file-preview').classList.remove('hidden');
+                    document.getElementById('file-icon-preview').classList.add('hidden');
+                } else {
+                    document.getElementById('file-preview').classList.add('hidden');
+                    document.getElementById('file-icon-preview').classList.remove('hidden');
+                    document.getElementById('file-icon-preview').innerHTML = `<i class="${api.getFileIcon(doc.fileType)}"></i>`;
+                }
+            } else {
+                document.getElementById('file-preview-container').classList.add('hidden');
+            }
+            
+            document.getElementById('form-alert').className = 'hidden rounded-lg p-4 border flex';
+            switchView('input-form');
+        }
+
+        document.getElementById('document-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            const alertBox = document.getElementById('form-alert');
+            const alertIcon = document.getElementById('alert-icon');
+            const alertMessage = document.getElementById('alert-message');
+            const uploadProgress = document.getElementById('upload-progress');
+            const uploadBar = document.getElementById('upload-bar');
+            const uploadPercent = document.getElementById('upload-percent');
+            const uploadText = document.getElementById('upload-text');
+            
+            alertBox.className = 'hidden rounded-lg p-4 border flex';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+
+            const title = document.getElementById('doc-title').value;
+            const category = document.getElementById('doc-category').value;
+            const pic = document.getElementById('doc-pic').value;
+            const desc = document.getElementById('doc-desc').value;
+            const fileInput = document.getElementById('doc-file');
+            const file = fileInput.files[0];
+
+            const oldFileUrl = document.getElementById('doc-old-fileUrl').value;
+            const oldFileName = document.getElementById('doc-old-fileName').value;
+            const oldFileType = document.getElementById('doc-old-fileType').value;
+
+            if (!currentDokumenId && !file) {
+                Notification.show('File wajib dipilih untuk dokumen baru.', 'warning');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Data';
+                return;
+            }
+
+            try {
+                let finalFileUrl = oldFileUrl;
+                let finalFileName = oldFileName;
+                let finalFileType = oldFileType;
+
+                if (file) {
+                    uploadProgress.classList.remove('hidden');
+                    uploadBar.style.width = '30%';
+                    uploadPercent.textContent = '30%';
+                    uploadText.textContent = 'Membaca dan mempersiapkan file...';
+
+                    const uploadResult = await api.uploadFile(file);
+                    if (!uploadResult.success) throw new Error(uploadResult.error || 'Gagal upload file ke Google Drive');
+
+                    finalFileUrl = uploadResult.fileUrl;
+                    finalFileName = uploadResult.fileName;
+                    finalFileType = uploadResult.mimeType;
+
+                    uploadBar.style.width = '70%';
+                    uploadPercent.textContent = '70%';
+                    uploadText.textContent = 'Menyimpan data ke database...';
+                }
+
+                const docData = {
+                    judul: title,
+                    kategori: category,
+                    unit: pic,
+                    deskripsi: desc,
+                    fileUrl: finalFileUrl,
+                    fileName: finalFileName,
+                    fileType: finalFileType
+                };
+
+                let result;
+                if (currentDokumenId) {
+                    result = await api.updateDokumen(currentDokumenId, docData);
+                } else {
+                    result = await api.addDokumen(docData);
+                }
+
+                if (result.success) {
+                    uploadBar.style.width = '100%';
+                    uploadPercent.textContent = '100%';
+                    uploadText.textContent = 'Selesai!';
+                    
+                    Notification.show(currentDokumenId ? 'Dokumen berhasil diperbarui!' : 'Dokumen berhasil ditambahkan!');
+                    
+                    this.reset();
+                    prepareAddDokumen();
+                    
+                    // PERBAIKAN: Setelah sukses, kembali ke halaman daftar (data-list), bukan tetap di form
+                    setTimeout(() => {
+                        uploadProgress.classList.add('hidden');
+                        uploadBar.style.width = '0%';
+                        switchView('data-list'); 
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'Gagal menyimpan data ke database');
+                }
+                
+            } catch (error) {
+                console.error("Save Error:", error);
+                alertBox.className = 'rounded-lg p-4 bg-red-50 border border-red-200 flex';
+                alertIcon.className = 'fas fa-exclamation-circle text-red-500 mt-0.5 mr-3';
+                alertMessage.className = 'text-sm text-red-700';
+                alertMessage.innerHTML = `<strong>Gagal:</strong> ${error.message}`;
+                Notification.show(error.message, 'error');
+                
+                uploadProgress.classList.add('hidden');
+                uploadBar.style.width = '0%';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = currentDokumenId ? '<i class="fas fa-save mr-2"></i> Update Data' : '<i class="fas fa-save mr-2"></i> Simpan Data';
+            }
+        });
+
+        // File Upload Handling (Preview)
+        const uploadArea = document.getElementById('upload-area');
+        const fileInputEl = document.getElementById('doc-file');
+        const filePreview = document.getElementById('file-preview');
+        const fileIconPreview = document.getElementById('file-icon-preview');
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        uploadArea.addEventListener('click', () => fileInputEl.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInputEl.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+        fileInputEl.addEventListener('change', (e) => { if (e.target.files.length) handleFileSelect(e.target.files[0]); });
+
+        function handleFileSelect(file) {
+            if (file.size > CONFIG.MAX_FILE_SIZE) {
+                Notification.show(`Ukuran file (${CONFIG.formatFileSize(file.size)}) melebihi batas maksimal ${CONFIG.MAX_FILE_SIZE_MB}MB`, 'error');
+                fileInputEl.value = '';
+                return;
+            }
+            if (!CONFIG.ALLOWED_FILE_TYPES.includes(file.type)) {
+                Notification.show('Tipe file tidak diizinkan.', 'error');
+                fileInputEl.value = '';
+                return;
+            }
+
+            fileNameDisplay.textContent = file.name;
+            filePreviewContainer.classList.remove('hidden');
+
+            if (api.isImage(file.type)) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    filePreview.src = e.target.result;
+                    filePreview.classList.remove('hidden');
+                    fileIconPreview.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                filePreview.classList.add('hidden');
+                fileIconPreview.classList.remove('hidden');
+                fileIconPreview.innerHTML = `<i class="${api.getFileIcon(file.type)}"></i>`;
+            }
+        }
+
+        async function renderDokumenTable(filterText = '') {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i></td></tr>';
+            
+            const result = await api.getDokumen();
+            if (!result.success) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500">Gagal memuat data: ${result.error}</td></tr>`;
+                return;
+            }
+
+            const filtered = result.data.filter(doc => 
+                doc.judul.toLowerCase().includes(filterText.toLowerCase()) || 
+                doc.kategori.toLowerCase().includes(filterText.toLowerCase())
+            ).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500">Tidak ada data ditemukan.</td></tr>';
+                document.getElementById('table-info').textContent = 'Menampilkan 0 data';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filtered.forEach((doc, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-green-50/50 transition-colors';
+                const docJson = JSON.stringify(doc).replace(/'/g, "&#39;");
+                tr.innerHTML = `
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">
+                        <div class="font-medium text-gray-800">${doc.judul}</div>
+                        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-paperclip mr-1"></i> ${doc.fileName || 'N/A'}</div>
+                    </td>
+                    <td class="py-4 px-6"><span class="px-2.5 py-1 rounded-full text-xs font-medium ${api.getCategoryColor(doc.kategori)}">${doc.kategori}</span></td>
+                    <td class="py-4 px-6 text-gray-600">${CONFIG.formatDate(doc.tanggal)}</td>
+                    <td class="py-4 px-6 text-center"><span class="px-2 py-1 rounded ${api.getStatusColor(doc.status)} text-xs">${doc.status}</span></td>
+                    <td class="py-4 px-6 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <button onclick='prepareEditDokumen(${docJson})' class="w-8 h-8 rounded bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 transition-colors" title="Edit"><i class="fas fa-edit text-xs"></i></button>
+                            <button onclick="prepareDelete('${doc.id}', 'dokumen')" class="w-8 h-8 rounded bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors" title="Hapus"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('table-info').textContent = `Menampilkan ${filtered.length} data`;
+        }
+
+        // ================= PERMOHONAN & KEBERATAN =================
+        let currentTanggapanId = null;
+        let currentTanggapanType = '';
+
+        async function openTanggapanModal(id, type) {
+            currentTanggapanId = id;
+            currentTanggapanType = type;
+            const res = type === 'permohonan' ? await api.getPermohonan() : await api.getKeberatan();
+            
+            if (res.success) {
+                const item = res.data.find(i => i.id === id);
+                if (!item) return;
+
+                document.getElementById('modal-tanggapan-title').textContent = type === 'permohonan' ? 'Detail & Tanggapan Permohonan' : 'Detail & Tanggapan Keberatan';
+                document.getElementById('tanggapan-balasan').value = item.balasan || '';
+                document.getElementById('tanggapan-status').value = item.status || 'Menunggu';
+
+                let detailHtml = '';
+                if (type === 'permohonan') {
+                    detailHtml = `
+                        <div><strong>Nama:</strong> ${item.nama}</div><div><strong>NIK:</strong> ${item.nik}</div>
+                        <div><strong>Email:</strong> ${item.email}</div><div><strong>Telepon:</strong> ${item.telepon}</div>
+                        <div class="md:col-span-2"><strong>Alamat:</strong> ${item.alamat}</div>
+                        <div class="md:col-span-2"><strong>Rincian:</strong> ${item.rincian}</div>
+                        <div><strong>Tujuan:</strong> ${item.tujuan}</div><div><strong>Tanggal:</strong> ${CONFIG.formatDate(item.tanggal)}</div>
+                    `;
+                } else {
+                    detailHtml = `
+                        <div><strong>Nama:</strong> ${item.nama}</div><div><strong>Email:</strong> ${item.email}</div>
+                        <div><strong>Telepon:</strong> ${item.telepon}</div><div><strong>Ref. Permohonan:</strong> ${item.no_permohonan}</div>
+                        <div class="md:col-span-2"><strong>Alasan Keberatan:</strong> ${item.alasan}</div>
+                        <div><strong>Tanggal:</strong> ${CONFIG.formatDate(item.tanggal)}</div>
+                    `;
+                }
+                document.getElementById('modal-detail-content').innerHTML = detailHtml;
+
+                const subject = encodeURIComponent(`Tanggapan PPID - ${item.id}`);
+                const body = encodeURIComponent(`Yth. ${item.nama},\n\nBerikut tanggapan kami:\n\n${item.balasan || '[Belum ada tanggapan]'}\n\nHormat kami,\nPPID Kemenag Kab. Lima Puluh Kota`);
+                document.getElementById('tanggapan-email-btn').href = `mailto:${item.email}?subject=${subject}&body=${body}`;
+
+                openModal('modal-tanggapan');
+            }
+        }
+
+        async function saveTanggapan() {
+            const balasan = document.getElementById('tanggapan-balasan').value.trim();
+            const status = document.getElementById('tanggapan-status').value;
+            
+            if (!balasan) {
+                Notification.show('Tanggapan/Balasan wajib diisi!', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-tanggapan');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            const result = currentTanggapanType === 'permohonan' 
+                ? await api.updatePermohonan(currentTanggapanId, { status, balasan })
+                : await api.updateKeberatan(currentTanggapanId, { status, balasan });
+
+            if (result.success) {
+                Notification.show('Tanggapan berhasil disimpan!');
+                closeModal('modal-tanggapan');
+                currentTanggapanType === 'permohonan' ? renderPermohonanTable() : renderKeberatanTable();
+            } else {
+                Notification.show('Gagal menyimpan: ' + result.error, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan Tanggapan';
+        }
+
+        async function renderPermohonanTable(filterText = '') {
+            const tbody = document.getElementById('table-permohonan');
+            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i></td></tr>';
+            const result = await api.getPermohonan();
+            if (!result.success) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500">Gagal memuat data: ${result.error}</td></tr>`;
+                return;
+            }
+
+            const filtered = result.data.filter(item => item.nama.toLowerCase().includes(filterText.toLowerCase())).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+            
+            tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="6" class="py-8 text-center text-gray-500">Tidak ada data.</td></tr>' : '';
+            filtered.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-indigo-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6"><div class="font-medium text-gray-800">${item.nama}</div><div class="text-xs text-gray-500">NIK: ${item.nik}</div></td>
+                    <td class="py-4 px-6"><div class="text-gray-800 text-sm line-clamp-2" title="${item.rincian}">${item.rincian}</div></td>
+                    <td class="py-4 px-6 text-gray-600 text-sm">${CONFIG.formatDate(item.tanggal)}</td>
+                    <td class="py-4 px-6 text-center"><span class="px-2 py-1 rounded ${api.getStatusColor(item.status)} text-xs">${item.status}</span></td>
+                    <td class="py-4 px-6 text-center">
+                        <button onclick="openTanggapanModal('${item.id}', 'permohonan')" class="w-8 h-8 rounded bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-600 transition-colors" title="Lihat & Balas"><i class="fas fa-comment-dots text-xs"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function renderKeberatanTable(filterText = '') {
+            const tbody = document.getElementById('table-keberatan');
+            tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i></td></tr>';
+            const result = await api.getKeberatan();
+            if (!result.success) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500">Gagal memuat data: ${result.error}</td></tr>`;
+                return;
+            }
+
+            const filtered = result.data.filter(item => item.nama.toLowerCase().includes(filterText.toLowerCase())).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+            
+            tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="6" class="py-8 text-center text-gray-500">Tidak ada data.</td></tr>' : '';
+            filtered.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-orange-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6"><div class="font-medium text-gray-800">${item.nama}</div><div class="text-xs text-gray-500">Ref: ${item.no_permohonan}</div></td>
+                    <td class="py-4 px-6"><div class="text-gray-800 text-sm line-clamp-2" title="${item.alasan}">${item.alasan}</div></td>
+                    <td class="py-4 px-6 text-gray-600 text-sm">${CONFIG.formatDate(item.tanggal)}</td>
+                    <td class="py-4 px-6 text-center"><span class="px-2 py-1 rounded ${api.getStatusColor(item.status)} text-xs">${item.status}</span></td>
+                    <td class="py-4 px-6 text-center">
+                        <button onclick="openTanggapanModal('${item.id}', 'keberatan')" class="w-8 h-8 rounded bg-gray-100 hover:bg-orange-100 text-gray-600 hover:text-orange-600 transition-colors" title="Lihat & Balas"><i class="fas fa-comment-dots text-xs"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ================= HAPUS DATA =================
+        let deleteTargetId = null;
+        let deleteTargetType = '';
+
+        function prepareDelete(id, type) {
+            deleteTargetId = id;
+            deleteTargetType = type;
+            openModal('modal-hapus');
+        }
+
+        async function confirmDelete() {
+            const btn = document.getElementById('btn-confirm-delete');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+
+            let result;
+            if (deleteTargetType === 'dokumen') {
+                result = await api.deleteDokumen(deleteTargetId);
+            }
+
+            if (result && result.success) {
+                Notification.show('Data berhasil dihapus!');
+                closeModal('modal-hapus');
+                if (deleteTargetType === 'dokumen') renderDokumenTable(document.getElementById('search-input').value);
+            } else {
+                Notification.show('Gagal menghapus data: ' + (result?.error || 'Unknown error'), 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = 'Ya, Hapus';
+            deleteTargetId = null;
+            deleteTargetType = '';
+        }
+
+        // ================= PROFIL & UTILS =================
+        async function loadProfilEdit() {
+            const result = await api.getProfil();
+            if (result.success && result.data) {
+                document.getElementById('profil-visi').value = result.data.visi || '';
+                document.getElementById('profil-misi').value = result.data.misi || '';
+                document.getElementById('profil-alamat').value = result.data.alamat || '';
+                document.getElementById('profil-telepon').value = result.data.telepon || '';
+                document.getElementById('profil-email').value = result.data.email || '';
+                document.getElementById('profil-jam').value = result.data.jam_operasional || '';
+            } else {
+                Notification.show('Gagal memuat profil: ' + (result.error || 'Unknown error'), 'error');
+            }
+        }
+
+        document.getElementById('profil-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-profil-submit');
+            const alertBox = document.getElementById('profil-alert');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+            alertBox.classList.add('hidden');
+
+            const result = await api.updateProfil({
+                visi: document.getElementById('profil-visi').value,
+                misi: document.getElementById('profil-misi').value,
+                alamat: document.getElementById('profil-alamat').value,
+                telepon: document.getElementById('profil-telepon').value,
+                email: document.getElementById('profil-email').value,
+                jam_operasional: document.getElementById('profil-jam').value
+            });
+
+            if (result.success) {
+                alertBox.classList.remove('hidden');
+                Notification.show('Profil berhasil diperbarui!');
+                setTimeout(() => alertBox.classList.add('hidden'), 3000);
+            } else {
+                Notification.show('Gagal memperbarui profil: ' + result.error, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Perubahan';
+        });
+
+        async function updateDashboardStats() {
+            const result = await api.getStats();
+            if (result.success) {
+                document.getElementById('stat-total').textContent = result.data.totalDokumen;
+                document.getElementById('stat-berkala').textContent = result.data.berkala;
+                document.getElementById('stat-permohonan').textContent = result.data.totalPermohonan;
+                document.getElementById('stat-keberatan').textContent = result.data.totalKeberatan;
+                document.getElementById('notif-count').textContent = result.data.permohonanMenunggu + result.data.keberatanDitinjau;
+            }
+
+            const logsResult = await api.getLogs();
+            const activityContainer = document.getElementById('recent-activity');
+            activityContainer.innerHTML = '';
+            
+            if(logsResult.success && logsResult.data && logsResult.data.length > 0) {
+                logsResult.data.slice(-5).reverse().forEach(log => {
+                    const el = document.createElement('div');
+                    el.className = 'flex items-start border-l-2 border-green-500 pl-4 py-1';
+                    el.innerHTML = `<div><p class="text-sm font-medium text-gray-800">${log.action}: ${log.detail}</p><p class="text-xs text-gray-500 mt-1">${CONFIG.formatDateTime(log.timestamp)} • ${log.user}</p></div>`;
+                    activityContainer.appendChild(el);
+                });
+            } else {
+                activityContainer.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Belum ada aktivitas.</p>';
+            }
+        }
+
+        // Search Handlers
+        document.getElementById('search-input').addEventListener('input', (e) => renderDokumenTable(e.target.value));
+        document.getElementById('search-permohonan').addEventListener('input', (e) => renderPermohonanTable(e.target.value));
+        document.getElementById('search-keberatan').addEventListener('input', (e) => renderKeberatanTable(e.target.value));
+
+        function logout() {
+            if(confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
+                localStorage.removeItem('ppid_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('sidebar').classList.add('flex');
+        });
+        document.getElementById('close-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('flex');
+        });
+    </script>
+</body>
+</html>

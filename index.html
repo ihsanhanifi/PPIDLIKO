@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPID - Kementerian Agama Kabupaten Lima Puluh Kota</title>
+    <meta name="description" content="Pejabat Pengelola Informasi dan Dokumentasi Kantor Kementerian Agama Kabupaten Lima Puluh Kota">
+    <meta name="keywords" content="PPID, Kemenag, Lima Puluh Kota, Informasi Publik, Keterbukaan Informasi">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Inline styles khusus untuk tombol auth di navbar agar rapi */
+        .btn-auth-nav {
+            padding: 8px 20px !important;
+            font-size: 14px !important;
+            border-radius: 20px !important;
+        }
+        .btn-auth-nav i {
+            margin-right: 6px;
+        }
+
+        /* Scroll to Top Button */
+        #scrollToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 125, 64, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        #scrollToTop:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 125, 64, 0.4);
+        }
+        #scrollToTop.show {
+            display: flex;
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-card {
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .pagination button:hover:not(:disabled) {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        .pagination button.active {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* PDF Preview Modal */
+        .pdf-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        .pdf-modal-content {
+            position: relative;
+            margin: 2% auto;
+            padding: 0;
+            width: 90%;
+            height: 90%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .pdf-modal iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .pdf-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .pdf-modal-close:hover {
+            background: rgba(255, 0, 0, 0.7);
+        }
+
+        /* Share Buttons */
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .share-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .share-btn:hover {
+            transform: scale(1.1);
+        }
+        .share-btn.whatsapp { background: #25D366; }
+        .share-btn.facebook { background: #1877F2; }
+        .share-btn.twitter { background: #1DA1F2; }
+        .share-btn.copy { background: #6c757d; }
+
+        /* FAQ Section */
+        .faq-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--dark-green);
+        }
+        .faq-question i {
+            transition: transform 0.3s;
+        }
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 20px;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 20px 20px;
+        }
+
+        /* Better Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state i {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        .empty-state h3 {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+        }
+
+        /* Announcement Banner */
+        .announcement-banner {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            position: relative;
+        }
+        .announcement-banner a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .announcement-banner .close-banner {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Announcement Banner (Optional) -->
+    <div class="announcement-banner" id="announcement-banner">
+        <i class="fas fa-bullhorn"></i> 
+        <strong>Pengumuman:</strong> Layanan permohonan informasi publik kini tersedia secara online! 
+        <a href="permohonan.html">Ajukan Sekarang</a>
+        <span class="close-banner" onclick="closeBanner()">&times;</span>
+    </div>
+
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <a onclick="switchPage('beranda')" class="logo" style="cursor: pointer;">
+                    <i class="fas fa-mosque"></i> PPID Kemenag Liko
+                </a>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <ul class="nav-links" id="nav-links">
+                    <li><a onclick="switchPage('beranda')" id="nav-beranda" class="active">Beranda</a></li>
+                    <li><a onclick="switchPage('profil')" id="nav-profil">Profil</a></li>
+                    <li><a onclick="switchPage('informasi')" id="nav-informasi">Informasi Publik</a></li>
+                    <li><a onclick="switchPage('faq')" id="nav-faq">FAQ</a></li>
+                    <li><a href="permohonan.html">Permohonan</a></li>
+                    <li><a href="keberatan.html">Keberatan</a></li>
+                    <!-- Dynamic Auth Button (Login / Dashboard) -->
+                    <li id="auth-nav-container">
+                        <a href="login.html" class="btn btn-primary btn-auth-nav">
+                            <i class="fas fa-sign-in-alt"></i> Login Admin
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ================= HALAMAN BERANDA ================= -->
+    <main id="page-beranda" class="view-page active">
+        <section class="hero container reveal">
+            <div class="hero-text">
+                <h1>Pejabat Pengelola Informasi dan Dokumentasi</h1>
+                <p>Berdasarkan Pasal 4 Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik, setiap orang berhak memperoleh Informasi Publik.</p>
+                <a onclick="switchPage('informasi')" class="btn btn-primary">Pelajari Lebih Lanjut</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ilustrasi PPID">
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="container stats-grid reveal">
+                <div class="stat-item">
+                    <div class="stat-circle" id="stat-dokumen">0</div>
+                    <p>Informasi Publik</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-circle" id="stat-permohonan">0</div>
+                    <p>Permohonan Informasi</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-circle" id="stat-dipenuhi">0</div>
+                    <p>Informasi Dipenuhi</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-circle" id="stat-keberatan">0</div>
+                    <p>Keberatan</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section container reveal">
+            <div class="cta-box">
+                <div class="cta-text">
+                    <h2>Pengajuan Informasi Publik Kini Lebih Mudah</h2>
+                    <p>Ajukan permohonan informasi publik, atau keberatan informasi publik dengan mengisi E-Form secara online melalui portal kami.</p>
+                    <div class="cta-buttons">
+                        <a href="permohonan.html" class="btn btn-primary"><i class="fas fa-file-alt"></i> Permohonan Informasi</a>
+                        <a href="keberatan.html" class="btn btn-outline"><i class="fas fa-exclamation-circle"></i> Keberatan Informasi</a>
+                    </div>
+                </div>
+                <div class="cta-image">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="E-Form Ilustrasi">
+                </div>
+            </div>
+        </section>
+
+        <section class="kategori">
+            <div class="container reveal">
+                <div class="kategori-header">
+                    <h2>Kategori Informasi Publik</h2>
+                    <p>Akses berbagai jenis informasi publik yang tersedia sesuai dengan kebutuhan dan kategori yang telah ditetapkan</p>
+                </div>
+                <div class="kategori-grid">
+                    <div class="card">
+                        <i class="fas fa-calendar-alt fa-3x" style="color: var(--primary-green);"></i>
+                        <h3>Informasi Berkala</h3>
+                        <p style="font-size: 14px; color: var(--text-light); text-align: center;">Informasi yang wajib diperbaharui kemudian disediakan dan diumumkan secara rutin.</p>
+                        <a onclick="openCategoryTab('Informasi Berkala')" class="btn btn-outline">Kunjungi</a>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-clock fa-3x" style="color: var(--primary-green);"></i>
+                        <h3>Informasi Setiap Saat</h3>
+                        <p style="font-size: 14px; color: var(--text-light); text-align: center;">Informasi yang harus disediakan oleh Badan Publik dan siap tersedia untuk bisa langsung diberikan.</p>
+                        <a onclick="openCategoryTab('Informasi Setiap Saat')" class="btn btn-outline">Kunjungi</a>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-bolt fa-3x" style="color: var(--primary-green);"></i>
+                        <h3>Informasi Serta Merta</h3>
+                        <p style="font-size: 14px; color: var(--text-light); text-align: center;">Informasi yang dapat mengancam hajat hidup orang banyak dan ketertiban umum jika tidak segera diumumkan.</p>
+                        <a onclick="openCategoryTab('Informasi Serta Merta')" class="btn btn-outline">Kunjungi</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= HALAMAN INFORMASI PUBLIK ================= -->
+    <main id="page-informasi" class="view-page">
+        <section class="page-header reveal">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a onclick="switchPage('beranda')">Beranda</a> &nbsp;/&nbsp; <span>Informasi Publik</span>
+                </div>
+                <h1 class="page-title">Daftar Informasi Publik</h1>
+                <p class="page-subtitle">Akses Informasi publik yang tersedia di Kemenag Kab. Lima Puluh Kota</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container reveal">
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="changeTab('Informasi Berkala', this)">Informasi Berkala</button>
+                    <button class="tab-btn" onclick="changeTab('Informasi Serta Merta', this)">Informasi Serta Merta</button>
+                    <button class="tab-btn" onclick="changeTab('Informasi Setiap Saat', this)">Informasi Setiap Saat</button>
+                    <button class="tab-btn" onclick="changeTab('Informasi Dikecualikan', this)">Informasi Dikecualikan</button>
+                </div>
+
+                <div class="data-card reveal">
+                    <div class="card-header">
+                        <h2 class="card-title" id="dynamic-title">
+                            <i class="far fa-folder-open"></i> Daftar Dokumen Informasi Berkala
+                        </h2>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="search-dokumen-input" placeholder="Cari dokumen..." onkeyup="searchDokumen(this)">
+                        </div>
+                    </div>
+
+                    <div id="dokumen-container">
+                        <!-- Loading Skeleton -->
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination" id="pagination-container"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= HALAMAN PROFIL ================= -->
+    <main id="page-profil" class="view-page">
+        <section class="page-header reveal">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a onclick="switchPage('beranda')">Beranda</a> &nbsp;/&nbsp; <span>Profil</span>
+                </div>
+                <h1 class="page-title">Profil PPID</h1>
+                <p class="page-subtitle">Kantor Kementerian Agama Kabupaten Lima Puluh Kota</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container reveal">
+                <div class="data-card" id="profil-content">
+                    <div class="skeleton" style="height: 400px;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= HALAMAN FAQ ================= -->
+    <main id="page-faq" class="view-page">
+        <section class="page-header reveal">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a onclick="switchPage('beranda')">Beranda</a> &nbsp;/&nbsp; <span>FAQ</span>
+                </div>
+                <h1 class="page-title">Pertanyaan Umum (FAQ)</h1>
+                <p class="page-subtitle">Temukan jawaban atas pertanyaan yang sering diajukan tentang PPID</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container reveal">
+                <div class="data-card">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Apa itu PPID?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>PPID (Pejabat Pengelola Informasi dan Dokumentasi) adalah pejabat yang bertanggung jawab di bidang penyimpanan, pendokumentasian, penyediaan, dan/atau pelayanan informasi di badan publik. PPID bertugas melayani permohonan informasi publik dari masyarakat sesuai dengan Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Bagaimana cara mengajukan permohonan informasi?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Anda dapat mengajukan permohonan informasi melalui:</p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Mengisi formulir online di halaman <a href="permohonan.html" style="color: var(--primary-green);">Permohonan Informasi</a></li>
+                                <li>Datang langsung ke kantor PPID Kemenag Kab. Lima Puluh Kota</li>
+                                <li>Mengirimkan surat permohonan melalui pos atau email</li>
+                            </ul>
+                            <p style="margin-top: 10px;">Pastikan Anda menyertakan identitas diri dan rincian informasi yang dibutuhkan.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Berapa lama waktu pelayanan permohonan informasi?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sesuai dengan Undang-Undang Nomor 14 Tahun 2008, PPID wajib memberikan tanggapan atas permohonan informasi paling lambat <strong>10 (sepuluh) hari kerja</strong> sejak permohonan diterima. Jika informasi yang diminta berada di bawah penguasaan badan publik lain, maka PPID akan meneruskan permohonan tersebut paling lambat <strong>7 (tujuh) hari kerja</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Apa saja jenis informasi yang dapat diminta?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Informasi yang dapat diminta meliputi:</p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Informasi Berkala:</strong> Informasi yang wajib disediakan dan diumumkan secara rutin</li>
+                                <li><strong>Informasi Setiap Saat:</strong> Informasi yang wajib disediakan dan tersedia untuk diakses</li>
+                                <li><strong>Informasi Serta Merta:</strong> Informasi yang dapat mengancam hajat hidup orang banyak</li>
+                            </ul>
+                            <p style="margin-top: 10px;">Namun, ada juga <strong>Informasi yang Dikecualikan</strong> yang tidak dapat diakses, seperti informasi yang berkaitan dengan rahasia negara, intelijen, atau data pribadi.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Bagaimana jika permohonan informasi ditolak?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Jika permohonan informasi Anda ditolak, Anda memiliki hak untuk mengajukan <strong>keberatan</strong> kepada atasan PPID dalam waktu <strong>30 (tiga puluh) hari kerja</strong> sejak penolakan diterima. Silakan kunjungi halaman <a href="keberatan.html" style="color: var(--primary-green);">Keberatan Informasi</a> untuk mengajukan keberatan.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Apakah ada biaya untuk mendapatkan informasi?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Pelayanan informasi publik pada dasarnya <strong>gratis</strong>. Namun, jika pemohon membutuhkan salinan dokumen fisik (fotokopi, cetakan, dll), maka dapat dikenakan biaya sesuai dengan tarif yang berlaku untuk pengganti biaya operasional (kertas, tinta, dll). Biaya ini akan diinformasikan terlebih dahulu sebelum pemohon menyetujui.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3>PPID Kemenag Liko</h3>
+                    <p>Menyediakan akses informasi publik yang transparan, akurat, dan dapat dipertanggungjawabkan untuk mendukung tata kelola pemerintahan yang baik.</p>
+                </div>
+                <div class="footer-col">
+                    <h3>Kontak</h3>
+                    <p id="footer-alamat"><i class="fas fa-map-marker-alt"></i> <span class="loading-text">Loading...</span></p>
+                    <p id="footer-telepon"><i class="fas fa-phone"></i> <span class="loading-text">Loading...</span></p>
+                    <p id="footer-email"><i class="fas fa-envelope"></i> <span class="loading-text">Loading...</span></p>
+                </div>
+                <div class="footer-col">
+                    <h3>Jam Operasional</h3>
+                    <p id="footer-jam"><i class="fas fa-clock"></i> <span class="loading-text">Loading...</span></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 PPID Kementerian Agama Kabupaten Lima Puluh Kota. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImg" alt="Preview Gambar">
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="pdfModal" class="pdf-modal">
+        <span class="pdf-modal-close" onclick="closePdfModal()">&times;</span>
+        <div class="pdf-modal-content">
+            <iframe id="pdfIframe" src=""></iframe>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script>
+        let currentKategori = 'Informasi Berkala';
+        let allDokumen = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // ================= INITIALIZATION =================
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthNav();
+            loadStats();
+            loadProfil();
+            initScrollToTop();
+        });
+
+        // Update tombol Login/Dashboard di Navbar
+        function updateAuthNav() {
+            const session = CONFIG.getCurrentUser();
+            const container = document.getElementById('auth-nav-container');
+            
+            if (session && session.role === 'admin') {
+                container.innerHTML = `
+                    <a href="dashboard.html" class="btn btn-outline btn-auth-nav" style="color: var(--white); border-color: var(--white);">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                `;
+            } else {
+                container.innerHTML = `
+                    <a href="login.html" class="btn btn-primary btn-auth-nav">
+                        <i class="fas fa-sign-in-alt"></i> Login Admin
+                    </a>
+                `;
+            }
+        }
+
+        // ================= NAVIGATION =================
+        function switchPage(pageId) {
+            document.querySelectorAll('.view-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            
+            if(pageId === 'beranda') {
+                document.getElementById('page-beranda').classList.add('active');
+                document.getElementById('nav-beranda').classList.add('active');
+            } else if(pageId === 'informasi') {
+                document.getElementById('page-informasi').classList.add('active');
+                document.getElementById('nav-informasi').classList.add('active');
+                loadDokumen('Informasi Berkala');
+            } else if(pageId === 'profil') {
+                document.getElementById('page-profil').classList.add('active');
+                document.getElementById('nav-profil').classList.add('active');
+                loadProfil();
+            } else if(pageId === 'faq') {
+                document.getElementById('page-faq').classList.add('active');
+                document.getElementById('nav-faq').classList.add('active');
+            }
+            
+            document.getElementById('nav-links').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(reveal, 100);
+        }
+
+        function openCategoryTab(tabName) {
+            switchPage('informasi');
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                if (tab.innerText.trim() === tabName) changeTab(tabName, tab);
+            });
+        }
+
+        function toggleMenu() {
+            document.getElementById('nav-links').classList.toggle('show');
+        }
+
+        // ================= SCROLL TO TOP =================
+        function initScrollToTop() {
+            const scrollBtn = document.getElementById('scrollToTop');
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollBtn.classList.add('show');
+                } else {
+                    scrollBtn.classList.remove('show');
+                }
+            });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= ANNOUNCEMENT BANNER =================
+        function closeBanner() {
+            document.getElementById('announcement-banner').style.display = 'none';
+        }
+
+        // ================= ANIMATIONS =================
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // ================= DATA LOADING =================
+        async function loadStats() {
+            const result = await api.getStats();
+            if (result.success) {
+                const stats = result.data;
+                document.getElementById('stat-dokumen').textContent = stats.totalDokumen;
+                document.getElementById('stat-permohonan').textContent = stats.totalPermohonan;
+                document.getElementById('stat-dipenuhi').textContent = stats.totalPermohonan - stats.permohonanMenunggu;
+                document.getElementById('stat-keberatan').textContent = stats.totalKeberatan;
+            }
+        }
+
+        async function loadDokumen(kategori) {
+            currentKategori = kategori;
+            currentPage = 1; // Reset ke halaman pertama
+            const container = document.getElementById('dokumen-container');
+            
+            // Tampilkan skeleton loading
+            container.innerHTML = `
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+            `;
+            
+            const result = await api.getDokumen(kategori);
+            if (result.success) {
+                allDokumen = result.data;
+                displayDokumen(allDokumen);
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Gagal Memuat Data</h3>
+                        <p>Terjadi kesalahan saat mengambil data dari database. Pastikan koneksi internet Anda stabil.</p>
+                        <p style="font-size: 12px; color: #999; margin-top: 10px;">Detail: ${result.error || 'Unknown error'}</p>
+                        <button onclick="loadDokumen(currentKategori)" class="btn btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-redo"></i> Coba Lagi
+                        </button>
+                    </div>
+                `;
+                document.getElementById('pagination-container').innerHTML = '';
+            }
+        }
+
+        function displayDokumen(dokumenList) {
+            const container = document.getElementById('dokumen-container');
+            
+            if (dokumenList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>Tidak Ada Dokumen</h3>
+                        <p>Belum ada dokumen dalam kategori ini. Silakan pilih kategori lain atau coba lagi nanti.</p>
+                    </div>
+                `;
+                document.getElementById('pagination-container').innerHTML = '';
+                return;
+            }
+
+            // Pagination logic
+            const totalPages = Math.ceil(dokumenList.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedDocs = dokumenList.slice(startIndex, endIndex);
+
+            let html = '<div style="display: grid; gap: 20px;">';
+            paginatedDocs.forEach((doc, index) => {
+                const isImage = api.isImage(doc.fileType);
+                const isPdf = doc.fileType && doc.fileType.includes('pdf');
+                const fileIcon = api.getFileIcon(doc.fileType);
+                const globalIndex = startIndex + index + 1;
+                
+                // Konversi URL Drive ke format yang bisa ditampilkan di <img>
+                const imageUrl = convertDriveUrlToImage(doc.fileUrl);
+                
+                html += `
+                    <div class="file-item">
+                        ${isImage && imageUrl ? 
+                            `<img src="${imageUrl}" alt="${doc.judul}" class="file-thumbnail" onclick="openModal('${imageUrl}')">` : 
+                            `<div class="file-icon-box">
+                                <i class="${fileIcon}" style="font-size: 40px; color: var(--primary-green);"></i>
+                            </div>`
+                        }
+                        <div class="file-info">
+                            <div class="file-title">${globalIndex}. ${doc.judul}</div>
+                            <div class="file-desc">${doc.deskripsi || 'Tidak ada deskripsi'}</div>
+                            <div class="file-meta">
+                                <i class="fas fa-folder"></i> ${doc.kategori} &nbsp;|&nbsp; 
+                                <i class="fas fa-building"></i> ${doc.unit || 'N/A'} &nbsp;|&nbsp; 
+                                <i class="fas fa-calendar"></i> ${CONFIG.formatDate(doc.tanggal)}
+                            </div>
+                            <div class="share-buttons">
+                                <div class="share-btn whatsapp" onclick="shareToWhatsApp('${doc.judul}', '${doc.fileUrl}')" title="Bagikan ke WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="share-btn facebook" onclick="shareToFacebook('${doc.fileUrl}')" title="Bagikan ke Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </div>
+                                <div class="share-btn twitter" onclick="shareToTwitter('${doc.judul}', '${doc.fileUrl}')" title="Bagikan ke Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </div>
+                                <div class="share-btn copy" onclick="copyLink('${doc.fileUrl}')" title="Salin Link">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            ${isPdf ? 
+                                `<button onclick="openPdfModal('${doc.fileUrl}')" class="download-btn" style="background: var(--dark-green);"><i class="fas fa-eye"></i> Lihat</button>` : 
+                                ''
+                            }
+                            ${doc.fileUrl ? 
+                                `<a href="${doc.fileUrl}" target="_blank" class="download-btn"><i class="fas fa-download"></i> Unduh</a>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                // Tampilkan preview gambar besar di bawah card jika file adalah gambar
+                if (isImage && imageUrl) {
+                    html += `<div style="margin-top: -15px; margin-bottom: 20px; padding: 0 15px 20px;">
+                        <img src="${imageUrl}" alt="${doc.judul}" class="image-preview" onclick="openModal('${imageUrl}')" style="max-height: 300px; width: 100%; object-fit: cover; border-radius: 8px; cursor: pointer;">
+                    </div>`;
+                }
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Render pagination
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const paginationContainer = document.getElementById('pagination-container');
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Previous button
+            html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left"></i> Sebelumnya
+            </button>`;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<span style="padding: 0 10px;">...</span>`;
+                }
+            }
+
+            // Next button
+            html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                Selanjutnya <i class="fas fa-chevron-right"></i>
+            </button>`;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            displayDokumen(allDokumen);
+            window.scrollTo({ top: document.querySelector('.data-card').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        // ================= HELPER: Convert Drive URL to Image URL =================
+        function convertDriveUrlToImage(driveUrl) {
+            if (!driveUrl) return '';
+            
+            // Extract file ID from Drive URL
+            const match = driveUrl.match(/[-\w]{25,}/);
+            if (match) {
+                const fileId = match[0];
+                // Use lh3.googleusercontent.com format which is more reliable for embedding
+                return `https://lh3.googleusercontent.com/d/${fileId}`;
+            }
+            return driveUrl;
+        }
+
+        function changeTab(tabName, element) {
+            document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('dynamic-title').innerHTML = `<i class="far fa-folder-open"></i> Daftar Dokumen ${tabName}`;
+            
+            // Reset search input saat ganti tab
+            document.getElementById('search-dokumen-input').value = '';
+            loadDokumen(tabName);
+        }
+
+        function searchDokumen(input) {
+            const filter = input.value.toLowerCase();
+            const filtered = allDokumen.filter(doc => 
+                doc.judul.toLowerCase().includes(filter) || 
+                (doc.deskripsi && doc.deskripsi.toLowerCase().includes(filter))
+            );
+            currentPage = 1; // Reset ke halaman pertama saat search
+            displayDokumen(filtered);
+        }
+
+        async function loadProfil() {
+            const container = document.getElementById('profil-content');
+            
+            const result = await api.getProfil();
+            if (result.success && result.data) {
+                const profil = result.data;
+                container.innerHTML = `
+                    <h2 style="color: var(--dark-green); margin-bottom: 20px;"><i class="fas fa-building"></i> Tentang PPID</h2>
+                    <p style="margin-bottom: 15px;">Pejabat Pengelola Informasi dan Dokumentasi (PPID) adalah pejabat yang bertanggung jawab di bidang penyimpanan, pendokumentasian, penyediaan, dan/atau pelayanan informasi di badan publik.</p>
+                    
+                    <h3 style="color: var(--dark-green); margin: 30px 0 15px;"><i class="fas fa-eye"></i> Visi</h3>
+                    <p style="margin-bottom: 15px; white-space: pre-line; background: var(--bg-gray); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-green);">${profil.visi || '-'}</p>
+                    
+                    <h3 style="color: var(--dark-green); margin: 30px 0 15px;"><i class="fas fa-bullseye"></i> Misi</h3>
+                    <p style="margin-bottom: 15px; white-space: pre-line; background: var(--bg-gray); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-green);">${profil.misi || '-'}</p>
+                    
+                    <h3 style="color: var(--dark-green); margin: 30px 0 15px;"><i class="fas fa-address-book"></i> Informasi Kontak</h3>
+                    <div style="background: var(--light-green); padding: 20px; border-radius: 10px;">
+                        <p style="margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="color: var(--primary-green); margin-right: 10px; width: 20px;"></i> ${profil.alamat || '-'}</p>
+                        <p style="margin-bottom: 10px;"><i class="fas fa-phone" style="color: var(--primary-green); margin-right: 10px; width: 20px;"></i> ${profil.telepon || '-'}</p>
+                        <p style="margin-bottom: 10px;"><i class="fas fa-envelope" style="color: var(--primary-green); margin-right: 10px; width: 20px;"></i> ${profil.email || '-'}</p>
+                        <p style="margin-bottom: 0;"><i class="fas fa-clock" style="color: var(--primary-green); margin-right: 10px; width: 20px;"></i> Jam Operasional:</p>
+                        <p style="white-space: pre-line; margin-left: 30px; margin-top: 5px;">${profil.jam_operasional || '-'}</p>
+                    </div>
+                `;
+                
+                // Update footer secara dinamis
+                document.getElementById('footer-alamat').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${profil.alamat || '-'}`;
+                document.getElementById('footer-telepon').innerHTML = `<i class="fas fa-phone"></i> ${profil.telepon || '-'}`;
+                document.getElementById('footer-email').innerHTML = `<i class="fas fa-envelope"></i> ${profil.email || '-'}`;
+                document.getElementById('footer-jam').innerHTML = `<i class="fas fa-clock"></i>\n${profil.jam_operasional || '-'}`;
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Gagal Memuat Profil</h3>
+                        <p>Terjadi kesalahan saat mengambil data profil.</p>
+                        <button onclick="loadProfil()" class="btn btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-redo"></i> Coba Lagi
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ================= FAQ FUNCTIONS =================
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
+        }
+
+        // ================= SHARE FUNCTIONS =================
+        function shareToWhatsApp(title, url) {
+            const text = `Check out this document: ${title}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function shareToFacebook(url) {
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            window.open(facebookUrl, '_blank');
+        }
+
+        function shareToTwitter(title, url) {
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+            window.open(twitterUrl, '_blank');
+        }
+
+        function copyLink(url) {
+            const tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            alert('Link berhasil disalin!');
+        }
+
+        // ================= MODAL FUNCTIONS =================
+        function openModal(src) {
+            document.getElementById('imageModal').style.display = 'block';
+            document.getElementById('modalImg').src = src;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function openPdfModal(url) {
+            document.getElementById('pdfModal').style.display = 'block';
+            document.getElementById('pdfIframe').src = url;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+            document.getElementById('pdfIframe').src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside the image
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            const pdfModal = document.getElementById('pdfModal');
+            if (event.target == imageModal) {
+                closeModal();
+            }
+            if (event.target == pdfModal) {
+                closePdfModal();
+            }
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal();
+                closePdfModal();
+            }
+        });
+    </script>
+</body>
+</html>
