@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Permohonan Informasi - PPID Kemenag Liko</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .form-card { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary-green); }
+        .form-section { margin-bottom: 30px; }
+        .form-section h3 { color: var(--primary-green); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--light-green); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; font-size: 14px; }
+        .form-group label .required { color: #dc3545; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; outline: none; font-family: 'Poppins', sans-serif; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(0, 125, 64, 0.1); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary-green), var(--dark-green)); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 125, 64, 0.3); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: var(--primary-green); text-decoration: none; font-weight: 500; }
+        .back-link a:hover { text-decoration: underline; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .form-card { padding: 25px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo"><i class="fas fa-mosque"></i> PPID Kemenag Liko</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="form-container">
+        <div class="form-card">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <i class="fas fa-file-alt" style="font-size: 50px; color: var(--primary-green); margin-bottom: 15px;"></i>
+                <h1 style="color: var(--dark-green); font-size: 28px; margin-bottom: 10px;">Formulir Permohonan Informasi</h1>
+                <p style="color: var(--text-light); font-size: 14px;">Kantor Kementerian Agama Kabupaten Lima Puluh Kota</p>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="permohonan-form">
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> Data Pemohon</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nama Lengkap <span class="required">*</span></label>
+                            <input type="text" id="nama" required placeholder="Masukkan nama lengkap">
+                        </div>
+                        <div class="form-group">
+                            <label>NIK <span class="required">*</span></label>
+                            <input type="text" id="nik" required placeholder="16 digit NIK" maxlength="16">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" id="email" required placeholder="email@contoh.com">
+                        </div>
+                        <div class="form-group">
+                            <label>No. Telepon <span class="required">*</span></label>
+                            <input type="tel" id="telepon" required placeholder="08xxxxxxxxxx">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat Lengkap <span class="required">*</span></label>
+                        <textarea id="alamat" required placeholder="Masukkan alamat lengkap"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> Informasi yang Dimohon</h3>
+                    <div class="form-group">
+                        <label>Rincian Informasi yang Dimohon <span class="required">*</span></label>
+                        <textarea id="rincian" required placeholder="Jelaskan secara detail informasi yang Anda butuhkan"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tujuan Penggunaan Informasi <span class="required">*</span></label>
+                        <select id="tujuan" required>
+                            <option value="">-- Pilih Tujuan --</option>
+                            <option value="Penelitian">Penelitian</option>
+                            <option value="Akademis">Akademis</option>
+                            <option value="Jurnalistik">Jurnalistik</option>
+                            <option value="Pengawasan">Pengawasan</option>
+                            <option value="Kepentingan Pribadi">Kepentingan Pribadi</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btn-submit">
+                    <i class="fas fa-paper-plane"></i> Kirim Permohonan
+                </button>
+            </form>
+
+            <div class="back-link">
+                <a href="index.html"><i class="fas fa-arrow-left"></i> Kembali ke Beranda</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script>
+        document.getElementById('permohonan-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-submit');
+            const alert = document.getElementById('alert');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            alert.style.display = 'none';
+
+            const data = {
+                nama: document.getElementById('nama').value,
+                nik: document.getElementById('nik').value,
+                email: document.getElementById('email').value,
+                telepon: document.getElementById('telepon').value,
+                alamat: document.getElementById('alamat').value,
+                rincian: document.getElementById('rincian').value,
+                tujuan: document.getElementById('tujuan').value
+            };
+
+            const result = await api.addPermohonan(data);
+
+            if (result.success) {
+                alert.className = 'alert alert-success';
+                alert.innerHTML = `
+                    <strong><i class="fas fa-check-circle"></i> Permohonan Berhasil Dikirim!</strong><br>
+                    Nomor Tiket: <strong>${result.data.id}</strong><br>
+                    Simpan nomor tiket ini untuk melacak status permohonan Anda.
+                `;
+                alert.style.display = 'block';
+                document.getElementById('permohonan-form').reset();
+                btn.innerHTML = '<i class="fas fa-check"></i> Terkirim';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Permohonan';
+                }, 3000);
+            } else {
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Gagal mengirim permohonan. Silakan coba lagi.';
+                alert.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Permohonan';
+            }
+        });
+    </script>
+</body>
+</html>
